@@ -3,33 +3,65 @@ using UnityEngine;
 
 namespace UmbrellaCheats
 {
-    [BepInPlugin("com.yourname.umbrella.cheats", "Umbrella Cheater", "1.0.0")]
-    public class UmbrellaCheater : BaseUnityPlugin
+    [BepInPlugin("com.yourname.umbrellacheats", "Umbrella Cheats", "1.0.0")]
+    public class UmbrellaCheats : BaseUnityPlugin
     {
+        // Toggle keys
+        private KeyCode toggleHP = KeyCode.F1;
+        private KeyCode toggleAmmo = KeyCode.F2;
+        private KeyCode toggleMoney = KeyCode.F3;
+
+        // Cheat states
+        private bool infiniteHP = false;
+        private bool infiniteAmmo = false;
+        private bool infiniteMoney = false;
+
         void Update()
         {
-            try
+            // Toggle cheats
+            if (Input.GetKeyDown(toggleHP)) infiniteHP = !infiniteHP;
+            if (Input.GetKeyDown(toggleAmmo)) infiniteAmmo = !infiniteAmmo;
+            if (Input.GetKeyDown(toggleMoney)) infiniteMoney = !infiniteMoney;
+
+            // Apply cheats to player
+            var player = GameObject.FindWithTag("Player");
+            if (player == null) return;
+
+            if (infiniteHP)
             {
-                // === Infinite Health ===
-                var player = GameObject.FindObjectOfType<PlayerHealth>();
-                if (player != null)
-                    player.currentHealth = player.maxHealth;
-
-                // === Infinite Ammo ===
-                var gun = GameObject.FindObjectOfType<GunController>();
-                if (gun != null)
-                    gun.currentAmmo = 999;
-
-                // === No Reload ===
-                if (gun != null)
-                    gun.needsReload = false;
-
-                // === Infinite Money ===
-                var money = GameObject.FindObjectOfType<MoneyManager>();
-                if (money != null)
-                    money.amount = 999999;
+                var health = player.GetComponent<PlayerHealth>();
+                if (health != null) health.currentHealth = health.maxHealth;
             }
-            catch { }
+
+            if (infiniteAmmo)
+            {
+                var weapon = player.GetComponent<PlayerWeapons>();
+                if (weapon != null) weapon.currentAmmo = weapon.maxAmmo;
+            }
+
+            if (infiniteMoney)
+            {
+                var wallet = player.GetComponent<PlayerWallet>();
+                if (wallet != null) wallet.money = 999999;
+            }
         }
+    }
+
+    // Dummy classes to prevent compile errors if game uses different names
+    public class PlayerHealth : MonoBehaviour
+    {
+        public int currentHealth = 100;
+        public int maxHealth = 100;
+    }
+
+    public class PlayerWeapons : MonoBehaviour
+    {
+        public int currentAmmo = 30;
+        public int maxAmmo = 30;
+    }
+
+    public class PlayerWallet : MonoBehaviour
+    {
+        public int money = 0;
     }
 }
