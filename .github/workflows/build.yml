@@ -25,18 +25,18 @@ jobs:
           wget https://github.com/BepInEx/BepInEx/releases/download/v5.4.23.4/BepInEx_win_x64_5.4.23.4.zip
           unzip BepInEx_win_x64_5.4.23.4.zip -d bepinex
 
-      # 4️⃣ Compile UmbrellaCheats.cs with mcs
+      # 4️⃣ Compile UmbrellaCheats.cs with Mono (correct paths)
       - name: Build DLL with Mono
         run: |
           mkdir -p build
           mcs -target:library -out:build/UmbrellaCheats.dll \
-            -reference:bepinex/core/BepInEx.dll \
-            -reference:bepinex/core/0Harmony.dll \
-            -reference:bepinex/core/UnityEngine.dll \
-            -reference:bepinex/core/UnityEngine.CoreModule.dll \
-            -reference:bepinex/core/UnityEngine.PhysicsModule.dll \
-            -reference:bepinex/core/UnityEngine.AnimationModule.dll \
-            -reference:bepinex/core/UnityEngine.InputLegacyModule.dll \
+            -reference:bepinex/BepInEx/core/BepInEx.dll \
+            -reference:bepinex/BepInEx/core/0Harmony.dll \
+            -reference:bepinex/BepInEx/core/UnityEngine.dll \
+            -reference:bepinex/BepInEx/core/UnityEngine.CoreModule.dll \
+            -reference:bepinex/BepInEx/core/UnityEngine.PhysicsModule.dll \
+            -reference:bepinex/BepInEx/core/UnityEngine.AnimationModule.dll \
+            -reference:bepinex/BepInEx/core/UnityEngine.InputLegacyModule.dll \
             UmbrellaCheats.cs
 
       # 5️⃣ Upload the DLL artifact
