@@ -28,7 +28,7 @@ jobs:
       - name: Build DLL
         run: |
           mkdir build
-cat > UmbrellaCheats.csproj <<'EOF'
+          cat > UmbrellaCheats.csproj <<'EOF'
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
