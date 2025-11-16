@@ -1,57 +1,78 @@
 name: BuildBepInExPlugin
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repo
       - uses: actions/checkout@v4
 
+      # 2️⃣ Setup .NET SDK (gives modern compiler)
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
+      # 3️⃣ Install unzip for BepInEx
       - name: Install unzip
         run: sudo apt-get install -y unzip
 
+      # 4️⃣ Download BepInEx 5.4.23.3
       - name: Download BepInEx
         run: |
-          wget https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip
-          unzip BepInEx_x64_5.4.21.0.zip -d bepinex
+          wget https://github.com/BepInEx/BepInEx/releases/download/v5.4.23.3/BepInEx_x64_5.4.23.3.zip
+          unzip BepInEx_x64_5.4.23.3.zip -d bepinex
 
-      - name: Create csproj and build
+      # 5️⃣ Create csproj and build DLL
+      - name: Build DLL
         run: |
           mkdir build
 
+          # Create csproj
           cat > UmbrellaCheats.csproj <<EOF
-          <Project Sdk="Microsoft.NET.Sdk">
-            <PropertyGroup>
-              <TargetFramework>net472</TargetFramework>
-              <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-              <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-            </PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
 
-            <ItemGroup>
-              <Compile Include="UmbrellaCheats.cs" />
-            </ItemGroup>
+  <ItemGroup>
+    <Compile Include="UmbrellaCheats.cs" />
+  </ItemGroup>
 
-            <ItemGroup>
-              <Reference Include="BepInEx">
-                <HintPath>bepinex/BepInEx/core/BepInEx.dll</HintPath>
-              </Reference>
-              <Reference Include="UnityEngine">
-                <HintPath>bepinex/BepInEx/core/UnityEngine.dll</HintPath>
-              </Reference>
-            </ItemGroup>
-          </Project>
-          EOF
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>bepinex/BepInEx/core/BepInEx.dll</HintPath>
+    </Reference>
 
+    <Reference Include="UnityEngine">
+      <HintPath>bepinex/BepInEx/core/UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>bepinex/BepInEx/core/UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>bepinex/BepInEx/core/UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>bepinex/BepInEx/core/UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
+EOF
+
+          # Build plugin
           dotnet build UmbrellaCheats.csproj -c Release -o build
 
-      - name: Upload artifact
+      # 6️⃣ Upload the DLL artifact
+      - name: Upload DLL
         uses: actions/upload-artifact@v4
         with:
           name: UmbrellaCheats
