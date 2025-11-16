@@ -8,26 +8,52 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Install dependencies
-        run: sudo apt-get install -y zip unzip
+
+      # Install .NET SDK (gives us csc compiler)
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install unzip
+        run: sudo apt-get install -y unzip
 
       - name: Download BepInEx
         run: |
           wget https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip
           unzip BepInEx_x64_5.4.21.0.zip -d bepinex
 
-      - name: Build DLL
+      - name: Build DLL with csc
         run: |
           mkdir build
-          mcs -target:library \
-              -r:bepinex/BepInEx/core/BepInEx.dll \
-              -r:bepinex/BepInEx/core/UnityEngine.dll \
-              UmbrellaCheats.cs \
-              -out:build/UmbrellaCheats.dll
+
+          # Write a temporary project file
+          cat > UmbrellaCheats.csproj <<EOF
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+              <TargetFramework>net472</TargetFramework>
+              <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+            </PropertyGroup>
+
+            <ItemGroup>
+              <Compile Include="UmbrellaCheats.cs" />
+            </ItemGroup>
+
+            <ItemGroup>
+              <Reference Include="BepInEx">
+                <HintPath>bepinex/BepInEx/core/BepInEx.dll</HintPath>
+              </Reference>
+              <Reference Include="UnityEngine">
+                <HintPath>bepinex/BepInEx/core/UnityEngine.dll</HintPath>
+              </Reference>
+            </ItemGroup>
+          </Project>
+          EOF
+
+          dotnet build -c Release -o build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: UmbrellaCheats
-          path: build/UmbrellaCheats.dll
+          path: build
